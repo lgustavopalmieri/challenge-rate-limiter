@@ -1,17 +1,19 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/joho/godotenv"
+	"github.com/lgustavopalmieri/challenge-rate-limiter/internal/database/redis"
 )
 
 func IPAndTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := r.RemoteAddr
 		fmt.Printf("Endereço IP do cliente: %s\n", ip)
-
-		route := r.URL.Path
-		fmt.Printf("Rota acessada: %s\n", route)
 
 		method := r.Method
 		fmt.Printf("Método: %s\n", method)
@@ -38,6 +40,13 @@ func goodbyeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	if err := godotenv.Load("./.env"); err != nil {
+		log.Fatal("Error trying to load env variables")
+		return
+	}
+
+	database.NewRedisClient(context.Background())
+
 	mux := http.NewServeMux()
 
 	mux.Handle("/", http.HandlerFunc(helloHandler))
