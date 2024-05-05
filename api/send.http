@@ -7,3 +7,9 @@ POST http://localhost:8080/goodbye HTTP/1.1
 Host: localhost:8080
 Content-Type: application/json
 API_KEY: 
+
+###
+POST http://localhost:8080/find HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+API_KEY: a

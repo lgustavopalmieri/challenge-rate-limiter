@@ -7,8 +7,7 @@ import (
 )
 
 type RateLimiterRepositoryInterface interface {
-	InitMonitoring(ctx context.Context, rateLimiter *rate_limiter_entity.RateLimiter) (*rate_limiter_entity.RateLimiter, error)
+	InitMonitoring(ctx context.Context, rateLimiter *rate_limiter_entity.RateLimiter) error
 	FindLimiter(ctx context.Context, ip, token string) (*rate_limiter_entity.RateLimiter, error)
-	UpdateMonitoring(ctx context.Context, rateLimiter rate_limiter_entity.RateLimiter) (*rate_limiter_entity.RateLimiter, error)
-	CleanLimiter(ctx context.Context, ip, token string) error
+	UpdateMonitoring(ctx context.Context, rateLimiter rate_limiter_entity.RateLimiter) error
 }

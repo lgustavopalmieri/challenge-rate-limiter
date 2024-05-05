@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
 type RateLimiter struct {
 	IP                     string
-	Token                  *string
+	Token                  string
 	IPLimit                int64
 	TokenLimit             int64
 	BlockDurationInSeconds int64
@@ -27,20 +28,28 @@ func parseEnvToNumber(envString string) int64 {
 	return envNum
 }
 
+func removeIpPort(receivedIp string) string {
+	pos := strings.Index(receivedIp, ":")
+	if pos != -1 {
+		return receivedIp[:pos]
+	}
+	return receivedIp
+}
+
 func NewRateLimiter(ip, token string) (*RateLimiter, error) {
 	ipLimit := os.Getenv("IP_LIMIT")
 	tokenLimit := os.Getenv("TOKEN_LIMIT")
 	blockDurationInSeconds := os.Getenv("TOKEN_LIMIT")
 
-	var tokenPtr *string
+	var tokenPtr string
 	if token != "" {
-		tokenPtr = &token
+		tokenPtr = token
 	} else {
 		token = ""
 	}
 
 	return &RateLimiter{
-		IP:                     ip,
+		IP:                     removeIpPort(ip),
 		Token:                  tokenPtr,
 		IPLimit:                parseEnvToNumber(ipLimit),
 		TokenLimit:             parseEnvToNumber(tokenLimit),

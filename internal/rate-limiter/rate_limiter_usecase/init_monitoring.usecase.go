@@ -36,54 +36,56 @@ type InitMonitoringOutputDTO struct {
 }
 
 func (uc *InitMonitoringUseCase) Execute(ctx context.Context, input InitMonitoringInputDTO) (*InitMonitoringOutputDTO, error) {
-	existsLimiter, err := uc.rateLimiterRepository.FindLimiter(ctx, input.IP, input.Token)
-	if err != nil {
-		return nil, err
-	}
-
-	if existsLimiter != nil {
-		updateLimiter, err := rate_limiter_entity.UpdateLimiter(*existsLimiter)
+	existsLimiter, _ := uc.rateLimiterRepository.FindLimiter(ctx, input.IP, input.Token)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	if existsLimiter == nil {
+		newRateLimiter, err := rate_limiter_entity.NewRateLimiter(
+			input.IP,
+			input.Token,
+		)
 		if err != nil {
-			log.Println("error trying update rate limiter entity")
+			log.Println("error trying create new rate limiter entity")
 			return nil, err
 		}
-		_, updateErr := uc.rateLimiterRepository.UpdateMonitoring(ctx, *updateLimiter)
-		if updateErr != nil {
-			log.Println("error trying update rate limiter on repository")
-			return nil, err
+		errNew := uc.rateLimiterRepository.InitMonitoring(ctx, newRateLimiter)
+		if errNew != nil {
+			log.Println("error trying create new rate limiter on repository")
+			return nil, errNew
 		}
+
 		return &InitMonitoringOutputDTO{
-			IP:                     updateLimiter.IP,
-			Token:                  *updateLimiter.Token,
-			IPLimit:                updateLimiter.IPLimit,
-			TokenLimit:             updateLimiter.TokenLimit,
-			BlockDurationInSeconds: updateLimiter.BlockDurationInSeconds,
-			InitTryingAt:           updateLimiter.InitTryingAt,
-			LastTryingAt:           updateLimiter.LastTryingAt,
-			Authorized:             updateLimiter.Authorized,
+			IP:                     newRateLimiter.IP,
+			Token:                  newRateLimiter.Token,
+			IPLimit:                newRateLimiter.IPLimit,
+			TokenLimit:             newRateLimiter.TokenLimit,
+			BlockDurationInSeconds: newRateLimiter.BlockDurationInSeconds,
+			InitTryingAt:           newRateLimiter.InitTryingAt,
+			LastTryingAt:           newRateLimiter.LastTryingAt,
+			Authorized:             newRateLimiter.Authorized,
 		}, nil
 	}
-	newRateLimiter, err := rate_limiter_entity.NewRateLimiter(
-		input.IP,
-		input.Token,
-	)
-	if err != nil {
-		log.Println("error trying create new rate limiter entity")
-		return nil, err
-	}
-	_, errNew := uc.rateLimiterRepository.InitMonitoring(ctx, newRateLimiter)
-	if errNew != nil {
-		log.Println("error trying create new rate limiter on repository")
-		return nil, errNew
-	}
-	return &InitMonitoringOutputDTO{
-		IP:                     newRateLimiter.IP,
-		Token:                  *newRateLimiter.Token,
-		IPLimit:                newRateLimiter.IPLimit,
-		TokenLimit:             newRateLimiter.TokenLimit,
-		BlockDurationInSeconds: newRateLimiter.BlockDurationInSeconds,
-		InitTryingAt:           newRateLimiter.InitTryingAt,
-		LastTryingAt:           newRateLimiter.LastTryingAt,
-		Authorized:             newRateLimiter.Authorized,
-	}, nil
+	// log.Println("identifica update")
+	// updateLimiter, err := rate_limiter_entity.UpdateLimiter(*existsLimiter)
+	// if err != nil {
+	// 	log.Println("error trying update rate limiter entity")
+	// 	return nil, err
+	// }
+	// updateErr := uc.rateLimiterRepository.UpdateMonitoring(ctx, *updateLimiter)
+	// if updateErr != nil {
+	// 	log.Println("error trying update rate limiter on repository")
+	// 	return nil, err
+	// }
+	// return &InitMonitoringOutputDTO{
+	// 	IP:                     updateLimiter.IP,
+	// 	Token:                  updateLimiter.Token,
+	// 	IPLimit:                updateLimiter.IPLimit,
+	// 	TokenLimit:             updateLimiter.TokenLimit,
+	// 	BlockDurationInSeconds: updateLimiter.BlockDurationInSeconds,
+	// 	InitTryingAt:           updateLimiter.InitTryingAt,
+	// 	LastTryingAt:           updateLimiter.LastTryingAt,
+	// 	Authorized:             updateLimiter.Authorized,
+	// }, nil
+	return nil, nil
 }

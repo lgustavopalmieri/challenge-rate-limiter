@@ -35,7 +35,7 @@ func (uc *FindLimiterUseCase) Execute(ctx context.Context, ip, token string) (*F
 	}
 	return &FindLimiterOutputDTO{
 		IP:                     existsLimiter.IP,
-		Token:                  *existsLimiter.Token,
+		Token:                  existsLimiter.Token,
 		IPLimit:                existsLimiter.IPLimit,
 		TokenLimit:             existsLimiter.TokenLimit,
 		BlockDurationInSeconds: existsLimiter.BlockDurationInSeconds,
