@@ -4,41 +4,40 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
-
-	"github.com/lgustavopalmieri/challenge-rate-limiter/internal/rate-limiter/rate_limiter_entity"
+	"os"
+	"ratelimiter2/internal/rate-limiter/rate_limiter_entity"
+	"time"
 )
 
 func (rd *RedisRepositoryDb) InitMonitoring(ctx context.Context, rateLimiter *rate_limiter_entity.RateLimiter) error {
-
 	if rateLimiter == nil {
-		return errors.New("rateLimiter is null")
+		return errors.New("rateLimiter is nil")
 	}
 
-	// rateLimiterEntity := &rate_limiter_entity.RateLimiter{
-	// 	IP:                     rateLimiter.IP,
-	// 	Token:                  rateLimiter.Token,
-	// 	IPLimit:                rateLimiter.IPLimit,
-	// 	TokenLimit:             rateLimiter.TokenLimit,
-	// 	BlockDurationInSeconds: rateLimiter.BlockDurationInSeconds,
-	// 	InitTryingAt:           rateLimiter.InitTryingAt,
-	// 	LastTryingAt:           rateLimiter.LastTryingAt,
-	// 	Authorized:             rateLimiter.Authorized,
-	// }
+	expirationTimeStr := os.Getenv("EXPIRATION_TIME")
+	if expirationTimeStr == "" {
+		return errors.New("EXPIRATION_TIME not set in environment variables")
+	}
+
+	expirationTime, err := time.ParseDuration(expirationTimeStr + "s")
+	if err != nil {
+		return fmt.Errorf("failed to parse EXPIRATION_TIME: %v", err)
+	}
 
 	jsonData, err := json.Marshal(rateLimiter)
 	if err != nil {
-		log.Println("failed to serialize rateLimiterEntity to JSON:", err)
+		log.Println("Failed to serialize rateLimiter to JSON:", err)
 		return err
 	}
 
 	key := rd.MakeKey(rateLimiter.IP, rateLimiter.Token)
 
-	err = rd.redisClient.Set(ctx, key, jsonData, 0).Err()
-	if err != nil {
-		log.Println("fail saving on redis")
+	if err := rd.redisClient.Set(ctx, key, jsonData, expirationTime * 2).Err(); err != nil {
+		log.Printf("Failed to save data to Redis for key %s: %v\n", key, err)
 		return err
 	}
 
-	return err
+	return nil
 }

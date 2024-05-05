@@ -2,9 +2,9 @@ package rate_limiter_usecase
 
 import (
 	"context"
+	"ratelimiter2/internal/rate-limiter/rate_limiter_entity"
+	"ratelimiter2/internal/rate-limiter/rate_limiter_repository"
 	"time"
-
-	"github.com/lgustavopalmieri/challenge-rate-limiter/internal/rate-limiter/rate_limiter_repository"
 )
 
 type FindLimiterUseCase struct {
@@ -23,13 +23,15 @@ type FindLimiterOutputDTO struct {
 	IPLimit                int64     `json:"ip_limit"`
 	TokenLimit             int64     `json:"token_limit"`
 	BlockDurationInSeconds int64     `json:"block_duration_in_seconds"`
+	Reqs                   int64     `json:"reqs,omitempty"`
 	InitTryingAt           time.Time `json:"init_trying_at"`
 	LastTryingAt           time.Time `json:"last_trying_at"`
 	Authorized             bool      `json:"authorized"`
 }
 
 func (uc *FindLimiterUseCase) Execute(ctx context.Context, ip, token string) (*FindLimiterOutputDTO, error) {
-	existsLimiter, err := uc.rateLimiterRepository.FindLimiter(ctx, ip, token)
+	newIp := rate_limiter_entity.RemoveIpPort(ip)
+	existsLimiter, err := uc.rateLimiterRepository.FindLimiter(ctx, newIp, token)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +41,7 @@ func (uc *FindLimiterUseCase) Execute(ctx context.Context, ip, token string) (*F
 		IPLimit:                existsLimiter.IPLimit,
 		TokenLimit:             existsLimiter.TokenLimit,
 		BlockDurationInSeconds: existsLimiter.BlockDurationInSeconds,
+		Reqs:                   existsLimiter.Reqs,
 		InitTryingAt:           existsLimiter.InitTryingAt,
 		LastTryingAt:           existsLimiter.LastTryingAt,
 		Authorized:             existsLimiter.Authorized,

@@ -13,6 +13,6 @@ FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/main /main
 COPY --from=builder /app/.env ./  
-EXPOSE 8080
+EXPOSE 8686
 
 ENTRYPOINT ["/main"]

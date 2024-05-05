@@ -15,5 +15,5 @@ func NewRedisRepositoryDb(ctx context.Context, redis *redis.Client) *RedisReposi
 }
 
 func (rd *RedisRepositoryDb) MakeKey(ip, token string) string {
-	return ip + "-" + token
+	return ip + ":" + token
 }
