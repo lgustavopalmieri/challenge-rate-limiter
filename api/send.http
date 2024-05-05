@@ -1,4 +1,4 @@
-POST http://localhost:8686/ HTTP/1.1
-Host: localhost:8686
+POST http://localhost:8080/ HTTP/1.1
+Host: localhost:8080
 Content-Type: application/json
 API_KEY: SOME_TOKEN_HERE

@@ -9,7 +9,7 @@ services:
     depends_on:
       - redis
     ports:
-      - "8686:8686"
+      - "8080:8080"
     networks:
       - rate-limiter-network
 

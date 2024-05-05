@@ -30,7 +30,7 @@ func main() {
 	mux.Handle("/", http.HandlerFunc(helloHandler))
 
 	fmt.Println("Servidor rodando em http://localhost:8080")
-	http.ListenAndServe(":8686", handlers.InitMonitoring(mux))
+	http.ListenAndServe(":8080", handlers.InitMonitoring(mux))
 }
 
 func connectRedis() *redis.Client {
